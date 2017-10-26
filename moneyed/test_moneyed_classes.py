@@ -283,6 +283,45 @@ class TestMoney:
                      Money(amount=2, currency=self.USD)]) ==
                 Money(amount=3, currency=self.USD))
 
+    @pytest.mark.skipif(PYTHON2, reason='Python 3 only')
+    def test_round(self):
+        x = Money(amount='1234.33569', currency=self.USD)
+        assert round(x, -4) == Money(amount='0', currency=self.USD)
+        assert round(x, -3) == Money(amount='1000', currency=self.USD)
+        assert round(x, -2) == Money(amount='1200', currency=self.USD)
+        assert round(x, -1) == Money(amount='1230', currency=self.USD)
+        assert round(x, 0) == Money(amount='1234', currency=self.USD)
+        assert round(x, 1) == Money(amount='1234.3', currency=self.USD)
+        assert round(x, 2) == Money(amount='1234.34', currency=self.USD)
+        assert round(x, 3) == Money(amount='1234.336', currency=self.USD)
+        assert round(x, 4) == Money(amount='1234.3357', currency=self.USD)
+
+    @pytest.mark.skipif(PYTHON2, reason='Python 3 only')
+    def test_round_context_override(self):
+        import decimal
+
+        x = Money(amount='2.5', currency=self.USD)
+        assert round(x, 0) == Money(amount=2, currency=self.USD)
+        x = Money(amount='3.5', currency=self.USD)
+        assert round(x, 0) == Money(amount=4, currency=self.USD)
+
+        with decimal.localcontext() as ctx:
+            ctx.rounding = decimal.ROUND_HALF_UP
+            x = Money(amount='2.5', currency=self.USD)
+            assert round(x, 0) == Money(amount=3, currency=self.USD)
+            x = Money(amount='3.5', currency=self.USD)
+            assert round(x, 0) == Money(amount=4, currency=self.USD)
+
+    @pytest.mark.skipif(PYTHON2, reason='Python 3 only')
+    def test_round_to_int_raises_error(self):
+        x = Money(amount='3.33569', currency=self.USD)
+
+        with pytest.raises(TypeError):
+            round(x)
+
+        with pytest.raises(TypeError):
+            round(x, None)
+
     def test_arithmetic_operations_return_real_subclass_instance(self):
         """
         Arithmetic operations on a subclass instance should return instances in the same subclass
