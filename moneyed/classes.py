@@ -155,6 +155,24 @@ class Money(object):
                 amount=(self.amount / force_decimal(other)),
                 currency=self.currency)
 
+    def __round__(self, ndigits=None):
+        """
+        Rounds the amount using the current ``Decimal`` rounding algorithm.
+
+        Calling round with no arguments is not supported, and raises
+        an ``TypeError``, as this would coerce the ``Money`` instance to
+        an ``int``, and loose the currency information.
+        """
+        if ndigits is None:
+            raise TypeError(
+                'Rounding Money instances without the ndigits argument '
+                'is not supported as it coerces the instance to an int, '
+                'loosing the currency information.')
+
+        return self.__class__(
+            amount=self.amount.quantize(Decimal('1e' + str(-ndigits))),
+            currency=self.currency)
+
     def __abs__(self):
         return self.__class__(
             amount=abs(self.amount),
